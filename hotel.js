@@ -9,7 +9,7 @@ $(document).ready(function () {
   });
   //  ------------
 
-  //output
+  //output div
   let output = $("#results");
 
   //select all inputs
@@ -22,7 +22,7 @@ $(document).ready(function () {
   let hotelLocationDropDown = $("#hotelLocation");
   let sortByDropDown = $("#sortBy");
 
-  //array of input fields we need
+  //array of input fields we'll need
   let allInputs = [
     searchInput,
     priceInput,
@@ -32,10 +32,19 @@ $(document).ready(function () {
     sortByDropDown
   ]
 
-  //fill roomTypes dropdown & fill result with all data till something changes
+  //fill roomTypes dropdown 
   sendAjax((data) => {
     $.each(data[0].roomtypes, (i, type) => {
       roomTypesDropDown.append(new Option(type.name, i));
+    });
+
+    //dynamically filling the hotel Location DropDown from entries city
+    let cities = [];
+    $.each(data[1].entries, (i, entry) => {
+      if (cities.includes(entry.city) === false) {
+        cities.push(entry.city);
+        hotelLocationDropDown.append(new Option(entry.city, entry.city));
+      }
     });
 
     //find the more expensive hotel
@@ -45,11 +54,13 @@ $(document).ready(function () {
       tmp = data[1].entries[i].price;
       if (tmp > highestPrice) highestPrice = tmp;
     }
+
     //set the maximum Price on range input
     priceInput.attr("max", highestPrice + 50);
     priceInput.attr("value", highestPrice + 50);
     $("#displaySelectedPrice").text(highestPrice + 50);
-    //show all hotels
+
+    //show all hotels to home page till something changes
     showFinalResult(data[1].entries);
   });
 
@@ -74,6 +85,7 @@ $(document).ready(function () {
         if ((inputValues.propertyType == entry.rating || inputValues.propertyType === "-1") &&
           (inputValues.rating === entry.ratings.text || inputValues.rating === "-1") &&
           (inputValues.city === entry.city || inputValues.city === "") &&
+          (inputValues.hotelLocation === entry.city || inputValues.hotelLocation === "-1") &&
           (inputValues.maxPrice >= entry.price)) {
 
           matchingEntries.push(entry);
@@ -197,7 +209,7 @@ $(document).ready(function () {
     }
 
     let result = ` 
-                  <div class="row bg-light">
+                  <div class="row bg-light border border-secondary rounded">
                           <div class="col ">
                             <img src=`+ entry.thumbnail + ` max alt="thumbnail" class="img-thumbnail">
                           </div>
